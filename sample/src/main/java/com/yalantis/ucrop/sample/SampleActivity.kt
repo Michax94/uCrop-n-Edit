@@ -58,7 +58,6 @@ class SampleActivity : BaseActivity(), UCropFragmentCallback {
     private var mSeekBarQuality: SeekBar? = null
     private var mTextViewQuality: TextView? = null
     private var mCheckBoxHideBottomControls: CheckBox? = null
-    private var mCheckBoxFreeStyleCrop: CheckBox? = null
     private var toolbar: Toolbar? = null
     private var settingsView: ScrollView? = null
     private val requestMode = BuildConfig.RequestMode
@@ -141,7 +140,6 @@ class SampleActivity : BaseActivity(), UCropFragmentCallback {
         mSeekBarQuality = findViewById(R.id.seekbar_quality)
         mTextViewQuality = findViewById(R.id.text_view_quality)
         mCheckBoxHideBottomControls = findViewById(R.id.checkbox_hide_bottom_controls)
-        mCheckBoxFreeStyleCrop = findViewById(R.id.checkbox_freestyle_crop)
         mCheckBoxBrigtness = findViewById(R.id.checkbox_brightness)
         mCheckBoxContrast = findViewById(R.id.checkbox_contrast)
         mCheckBoxSaturation = findViewById(R.id.checkbox_saturation)
@@ -292,7 +290,6 @@ class SampleActivity : BaseActivity(), UCropFragmentCallback {
         }
         options.setCompressionQuality(mSeekBarQuality!!.progress)
         options.setHideBottomControls(mCheckBoxHideBottomControls!!.isChecked)
-        options.setFreeStyleCropEnabled(mCheckBoxFreeStyleCrop!!.isChecked)
         options.setBrightnessEnabled(mCheckBoxBrigtness!!.isChecked)
         options.setContrastEnabled(mCheckBoxContrast!!.isChecked)
         options.setSaturationEnabled(mCheckBoxSaturation!!.isChecked)

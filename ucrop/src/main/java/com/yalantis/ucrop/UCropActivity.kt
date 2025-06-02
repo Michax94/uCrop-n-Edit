@@ -317,11 +317,6 @@ class UCropActivity : AppCompatActivity() {
         )
 
         // Overlay view options
-        mOverlayView!!.isFreestyleCropEnabled =
-            intent.getBooleanExtra(
-                UCrop.Options.EXTRA_FREE_STYLE_CROP,
-                OverlayView.DEFAULT_FREESTYLE_CROP_MODE != OverlayView.FREESTYLE_CROP_MODE_DISABLE,
-            )
         mOverlayView!!.setDimmedColor(
             intent.getIntExtra(
                 UCrop.Options.EXTRA_DIMMED_LAYER_COLOR,
@@ -753,7 +748,7 @@ class UCropActivity : AppCompatActivity() {
 
     private fun setupAspectRatioWidget(intent: Intent) {
         var aspectRationSelectedByDefault =
-            intent.getIntExtra(UCrop.Options.EXTRA_ASPECT_RATIO_SELECTED_BY_DEFAULT, 0)
+            intent.getIntExtra(UCrop.Options.EXTRA_ASPECT_RATIO_SELECTED_BY_DEFAULT, 2)
         var aspectRatioList: ArrayList<AspectRatio>? =
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 intent.getParcelableArrayListExtra(UCrop.Options.EXTRA_ASPECT_RATIO_OPTIONS, AspectRatio::class.java)
@@ -763,27 +758,29 @@ class UCropActivity : AppCompatActivity() {
             }
 
         if (aspectRatioList.isNullOrEmpty()) {
-            aspectRationSelectedByDefault = 2
             aspectRatioList = ArrayList()
-            aspectRatioList.add(AspectRatio(null, 1f, 1f))
-            aspectRatioList.add(AspectRatio(null, 3f, 4f))
+            aspectRatioList.add(AspectRatio(null, 1f, 1f, OverlayView.FREESTYLE_CROP_MODE_DISABLE))
+            aspectRatioList.add(AspectRatio(null, 3f, 4f, OverlayView.FREESTYLE_CROP_MODE_DISABLE))
             aspectRatioList.add(
                 AspectRatio(
-                    getString(R.string.ucrop_label_original).uppercase(
-                        Locale.getDefault(),
-                    ),
+                    getString(R.string.ucrop_label_original).uppercase(Locale.getDefault()),
                     CropImageView.SOURCE_IMAGE_ASPECT_RATIO,
                     CropImageView.SOURCE_IMAGE_ASPECT_RATIO,
-                ),
+                    OverlayView.FREESTYLE_CROP_MODE_ENABLE
+                )
             )
-            aspectRatioList.add(AspectRatio(null, 3f, 2f))
-            aspectRatioList.add(AspectRatio(null, 16f, 9f))
+            aspectRatioList.add(AspectRatio(null, 3f, 2f, OverlayView.FREESTYLE_CROP_MODE_DISABLE))
+            aspectRatioList.add(AspectRatio(null, 16f, 9f, OverlayView.FREESTYLE_CROP_MODE_DISABLE))
         }
+
+        aspectRationSelectedByDefault = if(aspectRationSelectedByDefault < aspectRatioList.size) aspectRationSelectedByDefault else 0
+
         val wrapperAspectRatioList = findViewById<LinearLayout>(R.id.layout_aspect_ratio)
         var wrapperAspectRatio: FrameLayout
         var aspectRatioTextView: AspectRatioTextView
         val lp = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT)
         lp.weight = 1f
+
         for (aspectRatio in aspectRatioList) {
             wrapperAspectRatio =
                 layoutInflater.inflate(R.layout.ucrop_aspect_ratio, null) as FrameLayout
@@ -794,18 +791,30 @@ class UCropActivity : AppCompatActivity() {
             wrapperAspectRatioList.addView(wrapperAspectRatio)
             mCropAspectRatioViews.add(wrapperAspectRatio)
         }
+
         mCropAspectRatioViews[aspectRationSelectedByDefault].isSelected = true
+
         for (cropAspectRatioView in mCropAspectRatioViews) {
             cropAspectRatioView.setOnClickListener { v ->
-                mGestureCropImageView!!.targetAspectRatio =
-                    ((v as ViewGroup).getChildAt(0) as AspectRatioTextView).getAspectRatio(v.isSelected())
+                val aspectRatioTextView = (v as ViewGroup).getChildAt(0) as AspectRatioTextView
+                val selectedAspectRatio = aspectRatioTextView.getAspectRatioObject()
+
+                mGestureCropImageView!!.targetAspectRatio = aspectRatioTextView.getAspectRatio(v.isSelected())
                 mGestureCropImageView!!.setImageToWrapCropBounds()
+
+                mOverlayView!!.freestyleCropMode = selectedAspectRatio?.freestyleMode ?: OverlayView.FREESTYLE_CROP_MODE_DISABLE
+
                 if (!v.isSelected()) {
                     for (cropAspectRatioView in mCropAspectRatioViews) {
                         cropAspectRatioView.isSelected = cropAspectRatioView === v
                     }
                 }
             }
+        }
+
+        if (aspectRationSelectedByDefault < aspectRatioList.size) {
+            val defaultAspectRatio = aspectRatioList[aspectRationSelectedByDefault]
+            mOverlayView!!.freestyleCropMode = defaultAspectRatio.freestyleMode
         }
     }
 

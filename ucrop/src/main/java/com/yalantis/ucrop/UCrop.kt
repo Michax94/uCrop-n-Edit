@@ -13,6 +13,8 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.FloatRange
 import androidx.annotation.IntRange
 import com.yalantis.ucrop.model.AspectRatio
+import com.yalantis.ucrop.view.CropImageView
+import com.yalantis.ucrop.view.OverlayView
 import java.util.Arrays
 import java.util.Locale
 
@@ -418,13 +420,6 @@ class UCrop private constructor(
         }
 
         /**
-         * @param enabled - set to true to let user resize crop bounds (disabled by default)
-         */
-        fun setFreeStyleCropEnabled(enabled: Boolean) {
-            optionBundle.putBoolean(EXTRA_FREE_STYLE_CROP, enabled)
-        }
-
-        /**
          * Pass an ordered list of desired aspect ratios that should be available for a user.
          *
          * @param selectedByDefault - index of aspect ratio option that is selected by default (starts with 0).
@@ -524,6 +519,25 @@ class UCrop private constructor(
          */
         fun setSharpnessEnabled(enabled: Boolean) {
             optionBundle.putBoolean(EXTRA_SHARPNESS, enabled)
+        }
+
+        /**
+         * Helper method to create AspectRatio with freestyle enabled for "Original" ratio
+         */
+        fun createOriginalAspectRatioWithFreestyle(title: String = "ORIGINAL"): AspectRatio {
+            return AspectRatio(
+                title.uppercase(Locale.getDefault()),
+                CropImageView.SOURCE_IMAGE_ASPECT_RATIO,
+                CropImageView.SOURCE_IMAGE_ASPECT_RATIO,
+                OverlayView.FREESTYLE_CROP_MODE_ENABLE
+            )
+        }
+
+        /**
+         * Helper method to create AspectRatio with freestyle disabled for fixed ratios
+         */
+        fun createFixedAspectRatio(title: String?, x: Float, y: Float): AspectRatio {
+            return AspectRatio(title, x, y, OverlayView.FREESTYLE_CROP_MODE_DISABLE)
         }
 
         companion object {

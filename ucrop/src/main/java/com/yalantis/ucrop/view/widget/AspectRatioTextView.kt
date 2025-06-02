@@ -33,6 +33,7 @@ class AspectRatioTextView(
     private var mAspectRatioTitle: String? = null
     private var mAspectRatioX = 0f
     private var mAspectRatioY = 0f
+    private var mAspectRatioObject: AspectRatio? = null
 
     @JvmOverloads
     constructor(context: Context, attrs: AttributeSet? = null) : this(context, attrs, 0) {
@@ -54,6 +55,7 @@ class AspectRatioTextView(
     }
 
     fun setAspectRatio(aspectRatio: AspectRatio) {
+        mAspectRatioObject = aspectRatio
         mAspectRatioTitle = aspectRatio.aspectRatioTitle
         mAspectRatioX = aspectRatio.aspectRatioX
         mAspectRatioY = aspectRatio.aspectRatioY
@@ -64,6 +66,10 @@ class AspectRatioTextView(
                 mAspectRatioX / mAspectRatioY
             }
         setTitle()
+    }
+
+    fun getAspectRatioObject(): AspectRatio? {
+        return mAspectRatioObject
     }
 
     fun getAspectRatio(toggleRatio: Boolean): Float {

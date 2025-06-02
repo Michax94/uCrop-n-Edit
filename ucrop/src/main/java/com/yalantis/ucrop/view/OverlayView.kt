@@ -57,6 +57,7 @@ class OverlayView
 
         @FreestyleMode
         private var mFreestyleCropMode = DEFAULT_FREESTYLE_CROP_MODE
+
         private var mPreviousTouchX = -1f
         private var mPreviousTouchY = -1f
         private var mCurrentTouchCornerIndex = -1
@@ -77,18 +78,6 @@ class OverlayView
         /***
          * Please use the new method [getFreestyleCropMode][.getFreestyleCropMode] method as we have more than 1 freestyle crop mode.
          */
-
-        /***
-         * Please use the new method [setFreestyleCropMode][.setFreestyleCropMode] method as we have more than 1 freestyle crop mode.
-         */
-        @get:Deprecated("")
-        @set:Deprecated("")
-        var isFreestyleCropEnabled: Boolean
-            get() = mFreestyleCropMode == FREESTYLE_CROP_MODE_ENABLE
-            set(freestyleCropEnabled) {
-                mFreestyleCropMode =
-                    if (freestyleCropEnabled) FREESTYLE_CROP_MODE_ENABLE else FREESTYLE_CROP_MODE_DISABLE
-            }
 
         @get:FreestyleMode
         var freestyleCropMode: Int

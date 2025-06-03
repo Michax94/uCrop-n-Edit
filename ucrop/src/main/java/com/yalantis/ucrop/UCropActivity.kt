@@ -766,7 +766,7 @@ class UCropActivity : AppCompatActivity() {
         if (aspectRatioList.isNullOrEmpty()) {
             aspectRatioList = ArrayList()
             aspectRatioList.add(AspectRatio(null, 1f, 1f, OverlayView.FREESTYLE_CROP_MODE_DISABLE))
-            aspectRatioList.add(AspectRatio(null, 3f, 4f, OverlayView.FREESTYLE_CROP_MODE_DISABLE))
+            aspectRatioList.add(AspectRatio(null, 3f, 4f, OverlayView.FREESTYLE_CROP_MODE_ENABLE_WITH_ASPECT_RATIO))
             aspectRatioList.add(
                 AspectRatio(
                     getString(R.string.ucrop_label_original).uppercase(Locale.getDefault()),
@@ -775,7 +775,7 @@ class UCropActivity : AppCompatActivity() {
                     OverlayView.FREESTYLE_CROP_MODE_ENABLE
                 )
             )
-            aspectRatioList.add(AspectRatio(null, 3f, 2f, OverlayView.FREESTYLE_CROP_MODE_DISABLE))
+            aspectRatioList.add(AspectRatio(null, 3f, 2f, OverlayView.FREESTYLE_CROP_MODE_ENABLE_WITH_ASPECT_RATIO))
             aspectRatioList.add(AspectRatio(null, 16f, 9f, OverlayView.FREESTYLE_CROP_MODE_DISABLE))
         }
 

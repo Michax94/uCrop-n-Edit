@@ -9,8 +9,10 @@ import android.graphics.RectF
 import android.graphics.Region
 import android.os.Build
 import android.util.AttributeSet
+import android.util.Log
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewGroup
 import androidx.annotation.ColorInt
 import androidx.annotation.IntDef
 import androidx.annotation.IntRange
@@ -292,6 +294,20 @@ constructor(
         if (cropViewRect.isEmpty || mFreestyleCropMode == FREESTYLE_CROP_MODE_DISABLE) {
             return false
         }
+
+        if (event.pointerCount > 1) {
+            val parent = this.parent
+            if (parent is ViewGroup) {
+                for (i in 0 until parent.childCount) {
+                    val child = parent.getChildAt(i)
+                    if (child is GestureCropImageView) {
+                        return child.onTouchEvent(event)
+                    }
+                }
+            }
+            return false
+        }
+
         var x = event.x
         var y = event.y
         if (event.action and MotionEvent.ACTION_MASK == MotionEvent.ACTION_DOWN) {
@@ -300,6 +316,18 @@ constructor(
             if (!shouldHandle) {
                 mPreviousTouchX = -1f
                 mPreviousTouchY = -1f
+
+                val parent = this.parent
+                if (parent is ViewGroup) {
+                    for (i in 0 until parent.childCount) {
+                        val child = parent.getChildAt(i)
+                        if (child is GestureCropImageView) {
+                            return child.onTouchEvent(event)
+                        }
+                    }
+                }
+                return false
+
             } else if (mPreviousTouchX < 0) {
                 mPreviousTouchX = x
                 mPreviousTouchY = y

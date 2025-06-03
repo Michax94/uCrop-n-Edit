@@ -350,10 +350,10 @@ open class CropImageView
             val deltaRight = unrotatedImageRect.right - unrotatedCropRect.right
             val deltaBottom = unrotatedImageRect.bottom - unrotatedCropRect.bottom
             val indents = FloatArray(4)
-            indents[0] = (if (deltaLeft > 0) deltaLeft else 0).toFloat()
-            indents[1] = (if (deltaTop > 0) deltaTop else 0).toFloat()
-            indents[2] = (if (deltaRight < 0) deltaRight else 0).toFloat()
-            indents[3] = (if (deltaBottom < 0) deltaBottom else 0).toFloat()
+            indents[0] = if (deltaLeft > 0) deltaLeft else 0f
+            indents[1] = if (deltaTop > 0) deltaTop else 0f
+            indents[2] = if (deltaRight < 0) deltaRight else 0f
+            indents[3] = if (deltaBottom < 0) deltaBottom else 0f
             mTempMatrix.reset()
             mTempMatrix.setRotate(currentAngle)
             mTempMatrix.mapPoints(indents)
@@ -501,7 +501,7 @@ open class CropImageView
             mCurrentImageMatrix.reset()
             mCurrentImageMatrix.postScale(initialMinScale, initialMinScale)
             mCurrentImageMatrix.postTranslate(tw, th)
-            imageMatrix = mCurrentImageMatrix
+            setImageMatrix(mCurrentImageMatrix)
         }
 
         /**

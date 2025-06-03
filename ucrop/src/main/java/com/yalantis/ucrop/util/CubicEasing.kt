@@ -2,17 +2,22 @@ package com.yalantis.ucrop.util
 
 object CubicEasing {
     fun easeOut(time: Float, start: Float, end: Float, duration: Float): Float {
-        var time = time
-        return end * ((time / duration - 1.0f.also { time = it }) * time * time + 1.0f) + start
+        val t = time / duration - 1.0f
+        return end * (t * t * t + 1.0f) + start
     }
 
     fun easeIn(time: Float, start: Float, end: Float, duration: Float): Float {
-        var time = time
-        return end * duration.let { time /= it; time } * time * time + start
+        val t = time / duration
+        return end * t * t * t + start
     }
 
     fun easeInOut(time: Float, start: Float, end: Float, duration: Float): Float {
-        var time = time
-        return if (duration / 2.0f.let { time /= it; time } < 1.0f) end / 2.0f * time * time * time + start else end / 2.0f * (2.0f.let { time -= it; time } * time * time + 2.0f) + start
+        var t = time / (duration / 2.0f)
+        return if (t < 1.0f) {
+            end / 2.0f * t * t * t + start
+        } else {
+            t -= 2.0f
+            end / 2.0f * (t * t * t + 2.0f) + start
+        }
     }
 }

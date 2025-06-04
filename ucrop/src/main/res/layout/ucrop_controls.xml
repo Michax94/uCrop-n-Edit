@@ -17,12 +17,20 @@
             android:layout_height="match_parent"
             android:background="@drawable/ucrop_wrapper_controls_shape" />
 
-        <LinearLayout
-            android:id="@+id/layout_aspect_ratio"
+        <FrameLayout
+            android:id="@+id/layout_aspect_ratio_container"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="center"
-            android:orientation="horizontal" />
+            android:layout_height="match_parent">
+
+            <LinearLayout
+                android:id="@+id/layout_aspect_ratio"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:baselineAligned="false" />
+
+        </FrameLayout>
 
         <include
             android:id="@+id/layout_rotate_wheel"

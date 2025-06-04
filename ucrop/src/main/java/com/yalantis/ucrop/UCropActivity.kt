@@ -58,6 +58,7 @@ import com.yalantis.ucrop.view.widget.HorizontalProgressWheelView.ScrollingListe
 import kotlinx.coroutines.launch
 import java.util.Locale
 import kotlin.math.roundToInt
+import com.yalantis.ucrop.view.ControlLayout
 
 /**
  * Created by Oleksii Shliama (https://github.com/shliama).
@@ -775,11 +776,36 @@ class UCropActivity : AppCompatActivity() {
 
         aspectRationSelectedByDefault = if(aspectRationSelectedByDefault < aspectRatioList.size) aspectRationSelectedByDefault else 0
 
-        val wrapperAspectRatioList = findViewById<LinearLayout>(R.id.layout_aspect_ratio)
+        val wrapperAspectRatioContainer = findViewById<ViewGroup>(R.id.layout_aspect_ratio)
+
+        val wrapperAspectRatioList: ViewGroup = if (aspectRatioList.size > 5) {
+            wrapperAspectRatioContainer.removeAllViews()
+
+            val controlLayout = ControlLayout(this)
+            controlLayout.layoutParams = ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
+
+            wrapperAspectRatioContainer.addView(controlLayout)
+            controlLayout
+        } else {
+            wrapperAspectRatioContainer as LinearLayout
+        }
+
         var wrapperAspectRatio: FrameLayout
         var aspectRatioTextView: AspectRatioTextView
-        val lp = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT)
-        lp.weight = 1f
+
+        val lp = if (aspectRatioList.size > 5) {
+            LinearLayout.LayoutParams(
+                resources.getDimensionPixelSize(R.dimen.ucrop_control_min_width),
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
+        } else {
+            LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT).apply {
+                weight = 1f
+            }
+        }
 
         for (aspectRatio in aspectRatioList) {
             wrapperAspectRatio =

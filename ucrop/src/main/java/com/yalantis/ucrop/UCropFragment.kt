@@ -31,6 +31,7 @@ import androidx.transition.TransitionManager
 import com.yalantis.ucrop.callback.BitmapCropCallback
 import com.yalantis.ucrop.model.AspectRatio
 import com.yalantis.ucrop.util.SelectedStateListDrawable
+import com.yalantis.ucrop.view.ControlLayout
 import com.yalantis.ucrop.view.CropImageView
 import com.yalantis.ucrop.view.GestureCropImageView
 import com.yalantis.ucrop.view.OverlayView
@@ -533,6 +534,7 @@ class UCropFragment : Fragment() {
             aspectRatioList = ArrayList()
             aspectRatioList.add(AspectRatio(null, 1f, 1f, OverlayView.FREESTYLE_CROP_MODE_DISABLE))
             aspectRatioList.add(AspectRatio(null, 3f, 4f, OverlayView.FREESTYLE_CROP_MODE_ENABLE_WITH_ASPECT_RATIO))
+            aspectRatioList.add(AspectRatio(null, 4f, 3f, OverlayView.FREESTYLE_CROP_MODE_ENABLE_WITH_ASPECT_RATIO))
             aspectRatioList.add(
                 AspectRatio(
                     getString(R.string.ucrop_label_original).uppercase(Locale.getDefault()),
@@ -543,15 +545,41 @@ class UCropFragment : Fragment() {
             )
             aspectRatioList.add(AspectRatio(null, 3f, 2f, OverlayView.FREESTYLE_CROP_MODE_ENABLE_WITH_ASPECT_RATIO))
             aspectRatioList.add(AspectRatio(null, 16f, 9f, OverlayView.FREESTYLE_CROP_MODE_DISABLE))
+            aspectRatioList.add(AspectRatio(null, 9f, 16f, OverlayView.FREESTYLE_CROP_MODE_DISABLE))
         }
 
         aspectRationSelectedByDefault = if(aspectRationSelectedByDefault < aspectRatioList.size) aspectRationSelectedByDefault else 0
 
-        val wrapperAspectRatioList = view.findViewById<LinearLayout>(R.id.layout_aspect_ratio)
+        val wrapperAspectRatioContainer = view.findViewById<ViewGroup>(R.id.layout_aspect_ratio)
+
+        val wrapperAspectRatioList: ViewGroup = if (aspectRatioList.size > 5) {
+            wrapperAspectRatioContainer.removeAllViews()
+
+            val controlLayout = ControlLayout(requireContext())
+            controlLayout.layoutParams = ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
+
+            wrapperAspectRatioContainer.addView(controlLayout)
+            controlLayout
+        } else {
+            wrapperAspectRatioContainer as LinearLayout
+        }
+
         var wrapperAspectRatio: FrameLayout
         var aspectRatioTextView: AspectRatioTextView
-        val lp = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT)
-        lp.weight = 1f
+
+        val lp = if (aspectRatioList.size > 5) {
+            LinearLayout.LayoutParams(
+                resources.getDimensionPixelSize(R.dimen.ucrop_control_min_width),
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
+        } else {
+            LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT).apply {
+                weight = 1f
+            }
+        }
 
         for (aspectRatio in aspectRatioList) {
             wrapperAspectRatio =

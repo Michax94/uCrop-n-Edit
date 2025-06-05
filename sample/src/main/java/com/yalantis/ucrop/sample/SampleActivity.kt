@@ -34,9 +34,11 @@ import com.yalantis.ucrop.UCrop.Companion.getError
 import com.yalantis.ucrop.UCrop.Companion.getOutput
 import com.yalantis.ucrop.UCrop.Companion.of
 import com.yalantis.ucrop.UCropActivity
+import com.yalantis.ucrop.UCropAspectRatioDialog
 import com.yalantis.ucrop.UCropFragment
-import com.yalantis.ucrop.UCropFragment.UCropResult
 import com.yalantis.ucrop.UCropFragmentCallback
+import com.yalantis.ucrop.model.AspectRatio
+import com.yalantis.ucrop.model.UCropResult
 import com.yalantis.ucrop.sample.ResultActivity.Companion.startWithUri
 import java.io.File
 import java.util.Locale
@@ -383,14 +385,25 @@ class SampleActivity : BaseActivity(), UCropFragmentCallback {
         supportInvalidateOptionsMenu()
     }
 
-    override fun onCropFinish(result: UCropResult?) {
-        when (Objects.requireNonNull(result)!!.mResultCode) {
+    override fun onCropFinish(result: UCropResult) {
+        when (result.mResultCode) {
             RESULT_OK -> handleCropResult(
-                result!!.mResultData
+                result.mResultData
             )
-            UCrop.RESULT_ERROR -> handleCropError(result!!.mResultData)
+            UCrop.RESULT_ERROR -> handleCropError(result.mResultData)
         }
         removeFragmentFromScreen()
+    }
+
+    override fun onCustomAspectRatioClicked(
+        custom: AspectRatio.Custom,
+        callback: (Pair<Float, Float>) -> Unit
+    ) {
+        UCropAspectRatioDialog(this) { aspectRatioX, aspectRatioY ->
+            callback.invoke(aspectRatioX to aspectRatioY)
+        }.apply {
+            setCurrentValues(custom.aspectRatioX, custom.aspectRatioY)
+        }.show()
     }
 
     fun removeFragmentFromScreen() {

@@ -60,7 +60,9 @@ class AspectRatioTextView(
         mAspectRatioX = aspectRatio.aspectRatioX
         mAspectRatioY = aspectRatio.aspectRatioY
         mAspectRatio =
-            if (mAspectRatioX == CropImageView.SOURCE_IMAGE_ASPECT_RATIO || mAspectRatioY == CropImageView.SOURCE_IMAGE_ASPECT_RATIO) {
+            if(aspectRatio is AspectRatio.Custom) {
+                0f
+            } else if (mAspectRatioX == CropImageView.SOURCE_IMAGE_ASPECT_RATIO || mAspectRatioY == CropImageView.SOURCE_IMAGE_ASPECT_RATIO) {
                 CropImageView.SOURCE_IMAGE_ASPECT_RATIO
             } else {
                 mAspectRatioX / mAspectRatioY
@@ -68,12 +70,26 @@ class AspectRatioTextView(
         setTitle()
     }
 
+    fun updateCustomAspectRatio(aspectRatioX: Float, aspectRatioY: Float) {
+        if (mAspectRatioObject is AspectRatio.Custom) {
+            mAspectRatioObject = (mAspectRatioObject as AspectRatio.Custom).copy(
+                aspectRatioX = aspectRatioX,
+                aspectRatioY = aspectRatioY,
+            )
+            mAspectRatioX = aspectRatioX
+            mAspectRatioY = aspectRatioY
+            mAspectRatio = aspectRatioX / aspectRatioY
+            mAspectRatioTitle = null
+            setTitle()
+        }
+    }
+
     fun getAspectRatioObject(): AspectRatio? {
         return mAspectRatioObject
     }
 
     fun getAspectRatio(toggleRatio: Boolean): Float {
-        if (toggleRatio) {
+        if ((mAspectRatioObject !is AspectRatio.Custom) && toggleRatio) {
             toggleAspectRatio()
             setTitle()
         }

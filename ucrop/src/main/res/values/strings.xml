@@ -14,4 +14,17 @@
     <string name="ucrop_contrast" translatable="false">Contrast</string>
     <string name="ucrop_saturation" translatable="false">Saturation</string>
     <string name="ucrop_sharpness" translatable="false">Sharpness</string>
+
+    <!-- Custom Aspect Ratio -->
+    <string name="ucrop_custom_aspect_ratio_title">Custom Aspect Ratio</string>
+    <string name="ucrop_custom_aspect_ratio_instruction">Enter width and height ratio</string>
+    <string name="ucrop_width_hint">Width</string>
+    <string name="ucrop_height_hint">Height</string>
+    <string name="ucrop_apply">Apply</string>
+    <string name="ucrop_custom">Custom</string>
+
+    <!-- Error messages -->
+    <string name="ucrop_error_empty_fields">Please fill in both width and height</string>
+    <string name="ucrop_error_invalid_values">Values must be greater than 0</string>
+    <string name="ucrop_error_invalid_number">Please enter valid numbers</string>
 </resources>

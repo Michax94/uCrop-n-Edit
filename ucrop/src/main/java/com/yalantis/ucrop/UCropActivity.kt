@@ -48,6 +48,7 @@ import androidx.transition.Transition
 import androidx.transition.TransitionManager
 import com.yalantis.ucrop.callback.BitmapCropCallback
 import com.yalantis.ucrop.model.AspectRatio
+import com.yalantis.ucrop.model.UCropResult
 import com.yalantis.ucrop.util.SelectedStateListDrawable
 import com.yalantis.ucrop.view.CropImageView
 import com.yalantis.ucrop.view.GestureCropImageView
@@ -123,6 +124,27 @@ class UCropActivity : AppCompatActivity() {
     private var mCompressFormat = DEFAULT_COMPRESS_FORMAT
     private var mCompressQuality = DEFAULT_COMPRESS_QUALITY
     private var mAllowedGestures = intArrayOf(SCALE, ROTATE, ALL)
+
+    private var callback: UCropFragmentCallback = object : UCropFragmentCallback {
+        override fun loadingProgress(showLoader: Boolean) {
+            mShowLoader = showLoader
+            supportInvalidateOptionsMenu()
+        }
+
+        override fun onCropFinish(result: UCropResult) {
+            setResult(result)
+            finish()
+        }
+
+        override fun onCustomAspectRatioClicked(currentAspectRatio: AspectRatio.Custom, callback: (Pair<Float, Float>) -> Unit) {
+            val dialog = UCropAspectRatioDialog(this@UCropActivity) { aspectRatioX, aspectRatioY ->
+                callback.invoke(aspectRatioX to aspectRatioY)
+            }
+            dialog.setCurrentValues(currentAspectRatio.aspectRatioX, currentAspectRatio.aspectRatioY)
+            dialog.show()
+        }
+
+    }
 
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -268,12 +290,10 @@ class UCropActivity : AppCompatActivity() {
             try {
                 mGestureCropImageView!!.setImageUri(inputUri, outputUri)
             } catch (e: Exception) {
-                setResultError(e)
-                finish()
+                callback.onCropFinish(UCropResult.getError(e))
             }
         } else {
-            setResultError(NullPointerException(getString(R.string.ucrop_error_input_data_is_absent)))
-            finish()
+            callback.onCropFinish(UCropResult.getError(NullPointerException(getString(R.string.ucrop_error_input_data_is_absent))))
         }
     }
 
@@ -673,13 +693,11 @@ class UCropActivity : AppCompatActivity() {
                     .interpolator =
                     AccelerateInterpolator()
                 mBlockingView!!.isClickable = false
-                mShowLoader = false
-                supportInvalidateOptionsMenu()
+                callback.loadingProgress(false)
             }
 
             override fun onLoadFailure(e: Exception) {
-                setResultError(e)
-                finish()
+                callback.onCropFinish(UCropResult.getError(e))
             }
         }
 
@@ -766,18 +784,19 @@ class UCropActivity : AppCompatActivity() {
 
         if (aspectRatioList.isNullOrEmpty()) {
             aspectRatioList = ArrayList()
-            aspectRatioList.add(AspectRatio(null, 1f, 1f, OverlayView.FREESTYLE_CROP_MODE_DISABLE))
-            aspectRatioList.add(AspectRatio(null, 3f, 4f, OverlayView.FREESTYLE_CROP_MODE_ENABLE_WITH_ASPECT_RATIO))
+            aspectRatioList.add(AspectRatio.Custom("CUSTOM"))
+            aspectRatioList.add(AspectRatio.Preset(null, 1f, 1f, OverlayView.FREESTYLE_CROP_MODE_DISABLE))
+            aspectRatioList.add(AspectRatio.Preset(null, 3f, 4f, OverlayView.FREESTYLE_CROP_MODE_ENABLE_WITH_ASPECT_RATIO))
             aspectRatioList.add(
-                AspectRatio(
+                AspectRatio.Preset(
                     getString(R.string.ucrop_label_original).uppercase(Locale.getDefault()),
                     CropImageView.SOURCE_IMAGE_ASPECT_RATIO,
                     CropImageView.SOURCE_IMAGE_ASPECT_RATIO,
                     OverlayView.FREESTYLE_CROP_MODE_ENABLE
                 )
             )
-            aspectRatioList.add(AspectRatio(null, 3f, 2f, OverlayView.FREESTYLE_CROP_MODE_ENABLE_WITH_ASPECT_RATIO))
-            aspectRatioList.add(AspectRatio(null, 16f, 9f, OverlayView.FREESTYLE_CROP_MODE_DISABLE))
+            aspectRatioList.add(AspectRatio.Preset(null, 3f, 2f, OverlayView.FREESTYLE_CROP_MODE_ENABLE_WITH_ASPECT_RATIO))
+            aspectRatioList.add(AspectRatio.Preset(null, 16f, 9f, OverlayView.FREESTYLE_CROP_MODE_DISABLE))
         }
 
         aspectRationSelectedByDefault = if(aspectRationSelectedByDefault < aspectRatioList.size) aspectRationSelectedByDefault else 0
@@ -831,6 +850,27 @@ class UCropActivity : AppCompatActivity() {
                 val aspectRatioTextView = (v as ViewGroup).getChildAt(0) as AspectRatioTextView
                 val selectedAspectRatio = aspectRatioTextView.getAspectRatioObject()
 
+                if(selectedAspectRatio is AspectRatio.Custom) {
+                    callback.onCustomAspectRatioClicked(selectedAspectRatio) { (aspectRatioX, aspectRatioY) ->
+                        // Update the text view with custom values
+                        aspectRatioTextView.updateCustomAspectRatio(aspectRatioX, aspectRatioY)
+
+                        // Apply the custom aspect ratio
+                        val customRatio = aspectRatioX / aspectRatioY
+                        mGestureCropImageView!!.targetAspectRatio = customRatio
+                        mGestureCropImageView!!.setImageToWrapCropBounds()
+
+                        mOverlayView!!.freestyleCropMode = OverlayView.FREESTYLE_CROP_MODE_ENABLE_WITH_ASPECT_RATIO
+
+                        // Select this view
+                        for (cropAspectRatioView in mCropAspectRatioViews) {
+                            cropAspectRatioView.isSelected = cropAspectRatioView === v
+                        }
+                    }
+
+                    return@setOnClickListener
+                }
+
                 mGestureCropImageView!!.targetAspectRatio = aspectRatioTextView.getAspectRatio(v.isSelected())
                 mGestureCropImageView!!.setImageToWrapCropBounds()
 
@@ -849,6 +889,33 @@ class UCropActivity : AppCompatActivity() {
             mOverlayView!!.freestyleCropMode = defaultAspectRatio.freestyleMode
         }
     }
+
+//    private fun showCustomAspectRatioDialog(aspectRatioTextView: AspectRatioTextView, wrapperView: ViewGroup) {
+//        val dialog = CustomAspectRatioDialog(this) { width, height ->
+//            // Update the text view with custom values
+//            aspectRatioTextView.updateCustomAspectRatio(width, height)
+//
+//            // Apply the custom aspect ratio
+//            val customRatio = width / height
+//            mGestureCropImageView!!.targetAspectRatio = customRatio
+//            mGestureCropImageView!!.setImageToWrapCropBounds()
+//
+//            mOverlayView!!.freestyleCropMode = OverlayView.FREESTYLE_CROP_MODE_ENABLE_WITH_ASPECT_RATIO
+//
+//            // Select this view
+//            for (cropAspectRatioView in mCropAspectRatioViews) {
+//                cropAspectRatioView.isSelected = cropAspectRatioView === wrapperView
+//            }
+//        }
+//
+//        // Set current values if already customized
+//        val currentAspectRatio = aspectRatioTextView.getAspectRatioObject()
+//        if (currentAspectRatio != null && currentAspectRatio !is AspectRatio.Custom) {
+//            dialog.setCurrentValues(currentAspectRatio.aspectRatioX, currentAspectRatio.aspectRatioY)
+//        }
+//
+//        dialog.show()
+//    }
 
     private fun setupRotateWidget() {
         mTextViewRotateAngle = findViewById(R.id.text_view_rotate)
@@ -1201,8 +1268,7 @@ class UCropActivity : AppCompatActivity() {
 
     protected fun cropAndSaveImage() {
         mBlockingView!!.isClickable = true
-        mShowLoader = true
-        supportInvalidateOptionsMenu()
+        callback.loadingProgress(true)
         mGestureCropImageView!!.cropAndSaveImage(
             mCompressFormat,
             mCompressQuality,
@@ -1214,63 +1280,31 @@ class UCropActivity : AppCompatActivity() {
                     imageWidth: Int,
                     imageHeight: Int,
                 ) {
-                    setResultUri(
-                        resultUri,
-                        mGestureCropImageView!!.targetAspectRatio,
-                        offsetX,
-                        offsetY,
-                        imageWidth,
-                        imageHeight,
+                    callback.loadingProgress(false)
+                    callback.onCropFinish(
+                        UCropResult.getResult(
+                            resultUri,
+                            mGestureCropImageView!!.targetAspectRatio,
+                            offsetX,
+                            offsetY,
+                            imageWidth,
+                            imageHeight,
+                            intent.extras?.getBundle("EXTRA-BUNDLE")
+                        ),
                     )
-                    finish()
                 }
 
                 override fun onCropFailure(t: Throwable) {
-                    setResultError(t)
-                    finish()
+                    callback.onCropFinish(
+                        UCropResult.getError(t),
+                    )
                 }
             },
         )
     }
 
-    protected fun setResultUri(
-        uri: Uri?,
-        resultAspectRatio: Float,
-        offsetX: Int,
-        offsetY: Int,
-        imageWidth: Int,
-        imageHeight: Int,
-    ) {
-        val bundle = intent.extras?.getBundle("EXTRA-BUNDLE")
-
-        if (bundle != null) {
-            setResult(
-                RESULT_OK,
-                Intent()
-                    .putExtra(UCrop.EXTRA_OUTPUT_URI, uri)
-                    .putExtra(UCrop.EXTRA_OUTPUT_CROP_ASPECT_RATIO, resultAspectRatio)
-                    .putExtra(UCrop.EXTRA_OUTPUT_IMAGE_WIDTH, imageWidth)
-                    .putExtra(UCrop.EXTRA_OUTPUT_IMAGE_HEIGHT, imageHeight)
-                    .putExtra(UCrop.EXTRA_OUTPUT_OFFSET_X, offsetX)
-                    .putExtra(UCrop.EXTRA_OUTPUT_OFFSET_Y, offsetY)
-                    .putExtra("EXTRA-BUNDLE", bundle),
-            )
-        } else {
-            setResult(
-                RESULT_OK,
-                Intent()
-                    .putExtra(UCrop.EXTRA_OUTPUT_URI, uri)
-                    .putExtra(UCrop.EXTRA_OUTPUT_CROP_ASPECT_RATIO, resultAspectRatio)
-                    .putExtra(UCrop.EXTRA_OUTPUT_IMAGE_WIDTH, imageWidth)
-                    .putExtra(UCrop.EXTRA_OUTPUT_IMAGE_HEIGHT, imageHeight)
-                    .putExtra(UCrop.EXTRA_OUTPUT_OFFSET_X, offsetX)
-                    .putExtra(UCrop.EXTRA_OUTPUT_OFFSET_Y, offsetY),
-            )
-        }
-    }
-
-    protected fun setResultError(throwable: Throwable?) {
-        setResult(UCrop.RESULT_ERROR, Intent().putExtra(UCrop.EXTRA_ERROR, throwable))
+    protected fun setResult(result: UCropResult) {
+        setResult(result.mResultCode, result.mResultData)
     }
 
     companion object {

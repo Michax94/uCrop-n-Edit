@@ -516,25 +516,6 @@ class UCrop private constructor(
             optionBundle.putBoolean(EXTRA_SHARPNESS, enabled)
         }
 
-        /**
-         * Helper method to create AspectRatio with freestyle enabled for "Original" ratio
-         */
-        fun createOriginalAspectRatioWithFreestyle(title: String = "ORIGINAL"): AspectRatio {
-            return AspectRatio(
-                title.uppercase(Locale.getDefault()),
-                CropImageView.SOURCE_IMAGE_ASPECT_RATIO,
-                CropImageView.SOURCE_IMAGE_ASPECT_RATIO,
-                OverlayView.FREESTYLE_CROP_MODE_ENABLE
-            )
-        }
-
-        /**
-         * Helper method to create AspectRatio with freestyle disabled for fixed ratios
-         */
-        fun createFixedAspectRatio(title: String?, x: Float, y: Float): AspectRatio {
-            return AspectRatio(title, x, y, OverlayView.FREESTYLE_CROP_MODE_DISABLE)
-        }
-
         companion object {
             const val EXTRA_COMPRESSION_FORMAT_NAME = "$EXTRA_PREFIX.CompressionFormatName"
             const val EXTRA_COMPRESSION_QUALITY = "$EXTRA_PREFIX.CompressionQuality"

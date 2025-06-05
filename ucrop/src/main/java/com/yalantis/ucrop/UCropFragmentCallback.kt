@@ -1,6 +1,7 @@
 package com.yalantis.ucrop
 
-import com.yalantis.ucrop.UCropFragment.UCropResult
+import com.yalantis.ucrop.model.AspectRatio
+import com.yalantis.ucrop.model.UCropResult
 
 interface UCropFragmentCallback {
     /**
@@ -13,5 +14,8 @@ interface UCropFragmentCallback {
      * Return cropping result or error
      * @param result
      */
-    fun onCropFinish(result: UCropResult?)
+    fun onCropFinish(result: UCropResult)
+
+
+    fun onCustomAspectRatioClicked(custom: AspectRatio.Custom, callback: (Pair<Float, Float>) -> Unit)
 }
